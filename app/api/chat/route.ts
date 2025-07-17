@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         });
 
         try {
-            const collection = await db.collection(ASTRA_DB_COLLECTION!);
+            const collection = db.collection(ASTRA_DB_COLLECTION!);
             const cursor = collection.find(null, {
                 sort: {
                     $vector: embeddings.data[0].embedding,
@@ -75,8 +75,8 @@ export async function POST(req: Request) {
             ___________________
         `
         };
-        const result = await streamText({
-            model: openai("gpt-4.1-nano-2025-04-14"),
+        const result = streamText({
+            model: openai("gpt-4o-mini"),
             messages: [systemMessage, ...messages],
         });
 

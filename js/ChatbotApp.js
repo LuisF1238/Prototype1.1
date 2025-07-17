@@ -110,7 +110,7 @@ class ChatbotApp {
         setTimeout(() => {
             try {
                 console.log("Student Info:", userData);
-                window.open('https://chatgpt.com/g/g-CZOnevxUV-mc-assistgpt', '_blank');
+                this.openASSISTgptPopup();
                 this.resetFormState(submitButton);
             } catch (error) {
                 console.error('Error opening chat:', error);
@@ -118,6 +118,34 @@ class ChatbotApp {
                 this.resetFormState(submitButton);
             }
         }, 1000);
+    }
+
+    openASSISTgptPopup() {
+        // Configure popup window settings
+        const popupWidth = 1000;
+        const popupHeight = 700;
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const popupLeft = (screenWidth - popupWidth) / 2;
+        const popupTop = (screenHeight - popupHeight) / 2;
+        
+        const popupFeatures = `width=${popupWidth},height=${popupHeight},left=${popupLeft},top=${popupTop},scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no`;
+        
+        // Open ASSISTgpt popup window
+        const assistGptUrl = 'http://localhost:3000'; // Next.js dev server URL
+        const popup = window.open(assistGptUrl, 'ASSISTgpt', popupFeatures);
+        
+        if (!popup) {
+            throw new Error('Popup blocked by browser');
+        }
+        
+        // Focus the popup window
+        popup.focus();
+        
+        // Close the chatbot panel after opening popup
+        this.panel.close();
+        
+        return popup;
     }
 
     resetFormState(submitButton) {
