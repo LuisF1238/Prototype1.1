@@ -37,13 +37,24 @@ class ChatbotApp {
         this.autocomplete = new AutocompleteInput('#major', '#major-dropdown', []);
         this.validator = new FormValidator('#student-info-form');
         this.dataManager = new StudentDataManager();
+        
+        // Try to load majors even in fallback mode
+        this.loadMajors().then(() => {
+            if (this.autocomplete && this.majorsList.length > 0) {
+                this.autocomplete.updateDataSource(this.majorsList);
+                console.log('Fallback: Updated autocomplete with majors');
+            }
+        }).catch(error => {
+            console.warn('Fallback: Could not load majors', error);
+        });
+        
         this.init();
     }
 
     async loadMajors() {
         try {
             console.log('Loading majors from CSV...');
-            const majors = await this.csvLoader.loadCSV('Merced College Majors.csv');
+            const majors = await this.csvLoader.loadCSV('data/Merced College Majors.csv');
             
             // Clean up major names (remove degree types in parentheses for cleaner display)
             this.majorsList = majors
@@ -52,6 +63,12 @@ class ChatbotApp {
                 .sort();
             
             console.log(`Loaded ${this.majorsList.length} majors:`, this.majorsList);
+            
+            // Update autocomplete with loaded majors
+            if (this.autocomplete) {
+                this.autocomplete.updateDataSource(this.majorsList);
+                console.log('Updated autocomplete with majors');
+            }
         } catch (error) {
             console.error('Failed to load majors from CSV:', error);
         }

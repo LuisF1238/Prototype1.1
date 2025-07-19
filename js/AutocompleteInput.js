@@ -11,6 +11,16 @@ class AutocompleteInput {
     }
 
     init() {
+        if (!this.input) {
+            console.error('AutocompleteInput: input element not found');
+            return;
+        }
+        if (!this.dropdown) {
+            console.error('AutocompleteInput: dropdown element not found');
+            return;
+        }
+        
+        console.log('AutocompleteInput: initialized with', this.dataSource.length, 'items');
         this.input.addEventListener('input', (e) => this.handleInput(e));
         this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
         this.input.addEventListener('blur', () => this.handleBlur());
@@ -19,10 +29,12 @@ class AutocompleteInput {
 
     updateDataSource(newDataSource) {
         this.dataSource = newDataSource || [];
+        console.log('AutocompleteInput: updated data source with', this.dataSource.length, 'items');
     }
 
     handleInput(e) {
         const query = e.target.value.toLowerCase().trim();
+        console.log('AutocompleteInput: input event, query:', query, 'dataSource length:', this.dataSource.length);
         
         if (query.length === 0) {
             this.hideDropdown();
@@ -33,6 +45,7 @@ class AutocompleteInput {
             item.toLowerCase().includes(query)
         ).slice(0, this.maxResults);
         
+        console.log('AutocompleteInput: found', matches.length, 'matches:', matches);
         this.showDropdown(matches);
     }
 
@@ -77,6 +90,8 @@ class AutocompleteInput {
     }
 
     showDropdown(matches) {
+        console.log('AutocompleteInput: showDropdown called with', matches.length, 'matches');
+        
         if (matches.length === 0) {
             this.hideDropdown();
             return;
@@ -90,6 +105,7 @@ class AutocompleteInput {
         ).join('');
         
         this.dropdown.style.display = 'block';
+        console.log('AutocompleteInput: dropdown display set to block, innerHTML:', this.dropdown.innerHTML);
         this.attachItemClickListeners();
     }
 

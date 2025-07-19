@@ -43,4 +43,13 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+config/next-env.d.ts
+
+# project specific
+/scripts/scraping-progress.json
+*.iml
+.idea/
+
+# temporary files
+/temp/
+/tmp/

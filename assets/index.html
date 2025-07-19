@@ -60,7 +60,7 @@
             background: #ffffff;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-            z-index: 9998;
+            z-index: 10000;
             padding: 20px;
             box-sizing: border-box;
             border: 1px solid #e9ecef;
@@ -281,7 +281,7 @@
 
 <!-- Chatbot Toggle Button -->
 <button id="chatbot-button" aria-label="Open chatbot assistant" title="Get help with your transfer planning">
-    <img src="/app/assets/chattt.jpg" alt="Chatbot" />
+    <img src="/assets/chattt.jpg" alt="Chatbot" />
 </button>
 
 <!-- Load JavaScript Classes -->
@@ -294,7 +294,165 @@
 
 <script>
     // Initialize the application
-    const app = new ChatbotApp();
+    console.log('Script starting...');
+    
+    // Wait for DOM to be fully loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
+    
+    function initApp() {
+        console.log('Initializing app...');
+        try {
+            const app = new ChatbotApp();
+            console.log('App initialized successfully');
+        } catch (error) {
+            console.error('Error initializing app:', error);
+            console.log('Setting up fallback button handler...');
+            setupFallbackHandler();
+        }
+    }
+    
+    // Fallback handler if main app fails
+    function setupFallbackHandler() {
+        const button = document.getElementById('chatbot-button');
+        const pane = document.getElementById('chatbot-pane');
+        const closeButton = document.getElementById('close-chatbot');
+        const form = document.getElementById('student-info-form');
+        
+        // Setup autocomplete for majors
+        console.log('Setting up fallback autocomplete...');
+        setupFallbackAutocomplete();
+        
+        if (button && pane) {
+            console.log('Setting up fallback button click handler');
+            button.addEventListener('click', () => {
+                console.log('Fallback: Button clicked');
+                pane.classList.toggle('open');
+                console.log('Fallback: Panel toggled, open:', pane.classList.contains('open'));
+            });
+            
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    pane.classList.remove('open');
+                });
+            }
+        }
+        
+        // Fallback form submission
+        if (form) {
+            console.log('Setting up fallback form handler');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                console.log('Fallback: Form submitted');
+                
+                const year = document.getElementById('year').value;
+                const major = document.getElementById('major').value.trim();
+                let transfer = document.getElementById('transfer').value;
+                
+                if (transfer === 'Other') {
+                    transfer = document.getElementById('transfer-other').value.trim() || 'unspecified';
+                }
+                
+                // Basic validation
+                if (!year) {
+                    alert('Please select your year');
+                    return;
+                }
+                if (!major) {
+                    alert('Please enter your major');
+                    return;
+                }
+                
+                console.log('Opening ASSISTgpt with data:', { year, major, transfer });
+                
+                // Open ASSISTgpt popup
+                const popupWidth = 1000;
+                const popupHeight = 700;
+                const screenWidth = window.screen.width;
+                const screenHeight = window.screen.height;
+                const popupLeft = (screenWidth - popupWidth) / 2;
+                const popupTop = (screenHeight - popupHeight) / 2;
+                
+                const popupFeatures = `width=${popupWidth},height=${popupHeight},left=${popupLeft},top=${popupTop},scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no`;
+                
+                const assistGptUrl = 'http://localhost:3000';
+                const popup = window.open(assistGptUrl, 'ASSISTgpt', popupFeatures);
+                
+                if (popup) {
+                    popup.focus();
+                    pane.classList.remove('open'); // Close the panel
+                } else {
+                    alert('Please allow popups for this site to open the chat');
+                }
+            });
+        }
+    }
+    
+    // Simple fallback autocomplete implementation
+    async function setupFallbackAutocomplete() {
+        console.log('Loading majors for fallback autocomplete...');
+        
+        try {
+            // Load majors from CSV
+            const response = await fetch('data/Merced College Majors.csv');
+            const csvText = await response.text();
+            const majors = csvText.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .map(major => major.replace(/\s*\([^)]*\)\s*$/, '').trim())
+                .filter(major => major.length > 0)
+                .sort();
+            
+            console.log('Fallback: Loaded', majors.length, 'majors');
+            
+            // Setup simple autocomplete
+            const majorInput = document.getElementById('major');
+            const dropdown = document.getElementById('major-dropdown');
+            
+            if (majorInput && dropdown) {
+                majorInput.addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase().trim();
+                    
+                    if (query.length === 0) {
+                        dropdown.style.display = 'none';
+                        return;
+                    }
+                    
+                    const matches = majors.filter(major => 
+                        major.toLowerCase().includes(query)
+                    ).slice(0, 8);
+                    
+                    if (matches.length > 0) {
+                        dropdown.innerHTML = matches.map(major => 
+                            `<div class="autocomplete-item" style="padding: 8px; cursor: pointer; border-bottom: 1px solid #eee;">${major}</div>`
+                        ).join('');
+                        
+                        dropdown.style.display = 'block';
+                        
+                        // Add click handlers for dropdown items
+                        dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                            item.addEventListener('click', () => {
+                                majorInput.value = item.textContent;
+                                dropdown.style.display = 'none';
+                            });
+                        });
+                    } else {
+                        dropdown.style.display = 'none';
+                    }
+                });
+                
+                // Hide dropdown when clicking outside
+                majorInput.addEventListener('blur', () => {
+                    setTimeout(() => dropdown.style.display = 'none', 200);
+                });
+            }
+        } catch (error) {
+            console.error('Failed to setup fallback autocomplete:', error);
+        }
+    }
 </script>
 
 </body>

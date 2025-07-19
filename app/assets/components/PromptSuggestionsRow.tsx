@@ -1,4 +1,4 @@
-import PromptSuggestionButton from "@/app/assets/components/PromptSuggestionButton";
+import PromptSuggestionButton from "./PromptSuggestionButton";
 
 interface PromptSuggestionRowProps {
     onPromptClick: (prompt: string) => void

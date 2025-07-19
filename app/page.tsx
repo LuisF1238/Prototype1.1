@@ -2,9 +2,9 @@
 import Image from "next/image"
 import assistGPTLogo from "./assets/assistGPTLogo.png"
 import { useChat } from "ai/react"
-import Bubble from "@/app/assets/components/Bubble";
-import LoadingBubble from "@/app/assets/components/LoadingBubble";
-import PromptSuggestionRow from "@/app/assets/components/PromptSuggestionsRow";
+import Bubble from "./assets/components/Bubble";
+import LoadingBubble from "./assets/components/LoadingBubble";
+import PromptSuggestionRow from "./assets/components/PromptSuggestionsRow";
 
 
 const Home = () => {

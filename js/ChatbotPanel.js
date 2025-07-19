@@ -11,10 +11,25 @@ class ChatbotPanel {
     }
 
     init() {
+        if (!this.button) {
+            console.error('Chatbot button not found');
+            return;
+        }
+        if (!this.pane) {
+            console.error('Chatbot pane not found');
+            return;
+        }
+        if (!this.closeButton) {
+            console.error('Close button not found');
+            return;
+        }
+        
+        console.log('Initializing chatbot panel...');
         this.button.addEventListener('click', () => this.toggle());
         this.closeButton.addEventListener('click', () => this.close());
         this.setupKeyboardNavigation();
         this.setupFocusTrapping();
+        console.log('Chatbot panel initialized successfully');
     }
 
     open() {
@@ -28,9 +43,14 @@ class ChatbotPanel {
     }
 
     toggle() {
+        console.log('Toggle called, current state:', this.pane.classList.contains('open'));
         this.pane.classList.toggle('open');
+        console.log('New state:', this.pane.classList.contains('open'));
         if (this.pane.classList.contains('open')) {
-            document.getElementById('year').focus();
+            const yearElement = document.getElementById('year');
+            if (yearElement) {
+                yearElement.focus();
+            }
         }
     }
 

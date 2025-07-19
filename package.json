@@ -6,8 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "ts-node ./scripts/loadDb.ts",
-    "lint": "next lint"
+    "seed": "ts-node --project ./config/tsconfig.json ./scripts/loadDb.ts",
+    "seed:refactored": "ts-node --project ./config/tsconfig.json ./scripts/loadDb-refactored.ts",
+    "seed:prod": "NODE_ENV=production ts-node --project ./config/tsconfig.json ./scripts/loadDb-refactored.ts",
+    "lint": "next lint --config ./config/eslint.config.mjs",
+    "type-check": "tsc --project ./config/tsconfig.json --noEmit",
+    "deploy:vercel": "vercel --prod",
+    "env:pull": "vercel env pull .env.local",
+    "security:audit": "npm audit && npm audit fix"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
