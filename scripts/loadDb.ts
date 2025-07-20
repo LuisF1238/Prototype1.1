@@ -1,5 +1,4 @@
 import { DataAPIClient } from "@datastax/astra-db-ts"
-import { PuppeteerWebBaseLoader } from "@langchain/community/document_loaders/web/puppeteer"
 import OpenAI from "openai"
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
 import "dotenv/config"
@@ -171,31 +170,36 @@ const insertChunk = async (text: string, vector: number[]): Promise<unknown> => 
 // ============================
 
 const scrapePage = async (url: string): Promise<string> => {
-    const { retries, timeout, waitTime } = CONFIG.scraping
+    const { retries } = CONFIG.scraping
     
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             console.log(`Scraping ${url} (attempt ${attempt}/${retries})`)
             
-            const loader = new PuppeteerWebBaseLoader(url, {
-                launchOptions: {
-                    headless: true,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox']
-                },
-                gotoOptions: {
-                    waitUntil: "domcontentloaded",
-                    timeout: timeout
-                },
-                evaluate: async (page, browser) => {
-                    await new Promise(resolve => setTimeout(resolve, waitTime))
-                    const result = await page.evaluate(() => document.body.innerHTML)
-                    await browser.close()
-                    return result
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (compatible; AssistBot/1.0)'
                 }
             })
             
-            const content = await loader.scrape()
-            return content?.replace(/<[^>]*>?/gm, '|') || ''
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            
+            const html = await response.text()
+            
+            // Remove script and style tags and their content
+            let content = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            content = content.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+            
+            // Remove HTML tags and replace with pipe separator
+            content = content.replace(/<[^>]*>?/gm, '|')
+                .replace(/\|+/g, '|') // Replace multiple pipes with single pipe
+                .replace(/^\||\|$/g, '') // Remove leading/trailing pipes
+                .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
+                .trim()
+            
+            return content
             
         } catch (error) {
             console.log(`Attempt ${attempt} failed for ${url}:`, (error as Error).message)
