@@ -174,7 +174,7 @@ export class DataLoaderService {
         }
     }
 
-    async validateUrls(): Promise<{ valid: number; invalid: number; details: any }> {
+    async validateUrls(): Promise<{ valid: number; invalid: number; details: unknown }> {
         const urls = UNIVERSITY_URLS.map(u => u.url)
         const { valid, invalid } = this.scrapingService.validateUrls(urls)
 

@@ -11,12 +11,28 @@ const {
     OPENAI_API_KEY,
 } = process.env;
 
-const openAI = new OpenAI({
-    apiKey: OPENAI_API_KEY!,
-});
+// Lazy initialization to avoid build-time errors
+let openAI: OpenAI | null = null;
+let client: DataAPIClient | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let db: any | null = null;
 
-const client = new DataAPIClient(ASTRA_DB_APPLICATION_TOKEN!);
-const db = client.db(ASTRA_DB_API_ENDPOINT!, { namespace: ASTRA_DB_NAMESPACE });
+function getOpenAI() {
+    if (!openAI) {
+        openAI = new OpenAI({
+            apiKey: OPENAI_API_KEY!,
+        });
+    }
+    return openAI;
+}
+
+function getDB() {
+    if (!db) {
+        client = new DataAPIClient(ASTRA_DB_APPLICATION_TOKEN!);
+        db = client.db(ASTRA_DB_API_ENDPOINT!, { namespace: ASTRA_DB_NAMESPACE });
+    }
+    return db;
+}
 
 export async function POST(req: Request) {
     try {
@@ -31,14 +47,14 @@ export async function POST(req: Request) {
 
         let docContext = "";
 
-        const embeddings = await openAI.embeddings.create({
+        const embeddings = await getOpenAI().embeddings.create({
             model: "text-embedding-3-small",
             input: latestMessage,
             encoding_format: "float",
         });
 
         try {
-            const collection = db.collection(ASTRA_DB_COLLECTION!);
+            const collection = getDB().collection(ASTRA_DB_COLLECTION!);
             const cursor = collection.find(null, {
                 sort: {
                     $vector: embeddings.data[0].embedding,

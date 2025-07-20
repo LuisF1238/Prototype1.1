@@ -72,7 +72,7 @@ export class ChatService {
         }
     }
 
-    async processUserMessage(userMessage: string, messageHistory: ChatMessage[] = []): Promise<{
+    async processUserMessage(userMessage: string): Promise<{
         systemMessage: ChatMessage
         context: VectorSearchResult[]
         formattedContext: string

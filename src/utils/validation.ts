@@ -50,7 +50,7 @@ export const validateText = (text: string, minLength: number = 1): void => {
 export const createServiceError = (
     code: string,
     message: string,
-    details?: any
+    details?: unknown
 ): ServiceError => {
     return {
         code,

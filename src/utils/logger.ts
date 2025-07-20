@@ -18,7 +18,7 @@ export class Logger {
         return levels.indexOf(level) >= levels.indexOf(this.logLevel)
     }
 
-    private formatMessage(level: string, message: string, data?: any): string {
+    private formatMessage(level: string, message: string, data?: unknown): string {
         const timestamp = new Date().toISOString()
         const baseMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
         
@@ -29,25 +29,25 @@ export class Logger {
         return baseMessage
     }
 
-    debug(message: string, data?: any): void {
+    debug(message: string, data?: unknown): void {
         if (this.shouldLog('debug')) {
             console.debug(this.formatMessage('debug', message, data))
         }
     }
 
-    info(message: string, data?: any): void {
+    info(message: string, data?: unknown): void {
         if (this.shouldLog('info')) {
             console.info(this.formatMessage('info', message, data))
         }
     }
 
-    warn(message: string, data?: any): void {
+    warn(message: string, data?: unknown): void {
         if (this.shouldLog('warn')) {
             console.warn(this.formatMessage('warn', message, data))
         }
     }
 
-    error(message: string, error?: Error | any): void {
+    error(message: string, error?: Error | unknown): void {
         if (this.shouldLog('error')) {
             console.error(this.formatMessage('error', message, error))
         }

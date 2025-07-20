@@ -39,13 +39,13 @@ export interface ProgressData {
 export interface DocumentChunk {
     text: string
     vector: number[]
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
 }
 
 export interface VectorSearchResult {
     text: string
     score?: number
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
 }
 
 // API types
@@ -69,5 +69,5 @@ export interface UniversityUrl {
 export interface ServiceError {
     code: string
     message: string
-    details?: any
+    details?: unknown
 }

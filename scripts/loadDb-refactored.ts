@@ -29,7 +29,7 @@ async function main(): Promise<void> {
         logger.info(`URL Validation: ${urlValidation.valid} valid, ${urlValidation.invalid} invalid`)
 
         if (urlValidation.invalid > 0) {
-            logger.warn('Some URLs are invalid:', urlValidation.details.invalidUrls)
+            logger.warn('Some URLs are invalid:', (urlValidation.details as { invalidUrls: string[] }).invalidUrls)
         }
 
         // Load all university data

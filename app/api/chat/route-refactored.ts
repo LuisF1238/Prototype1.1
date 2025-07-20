@@ -34,7 +34,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         logger.info(`Processing chat message: "${latestMessage.substring(0, 100)}..."`)
 
         // Process the user message and get context
-        const { systemMessage } = await chatService.processUserMessage(latestMessage, messages)
+        const { systemMessage } = await chatService.processUserMessage(latestMessage)
 
         // Generate streaming response
         const result = streamText({
