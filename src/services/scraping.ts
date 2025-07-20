@@ -1,4 +1,3 @@
-import { PuppeteerWebBaseLoader } from "@langchain/community/document_loaders/web/puppeteer"
 import { SCRAPING_CONFIG } from '../config'
 import { logger } from '../utils/logger'
 import { validateUrl } from '../utils/validation'
@@ -7,34 +6,24 @@ export class ScrapingService {
     async scrapePage(url: string): Promise<string> {
         validateUrl(url)
         
-        const { retries, timeout, waitTime, delayBetweenAttempts } = SCRAPING_CONFIG
+        const { retries, delayBetweenAttempts } = SCRAPING_CONFIG
         
         for (let attempt = 1; attempt <= retries; attempt++) {
             try {
                 logger.info(`Scraping ${url} (attempt ${attempt}/${retries})`)
                 
-                const loader = new PuppeteerWebBaseLoader(url, {
-                    launchOptions: {
-                        headless: true,
-                        args: ['--no-sandbox', '--disable-setuid-sandbox']
-                    },
-                    gotoOptions: {
-                        waitUntil: "domcontentloaded",
-                        timeout: timeout
-                    },
-                    evaluate: async (page, browser) => {
-                        // Wait for content to load
-                        await new Promise(resolve => setTimeout(resolve, waitTime))
-                        
-                        // Extract content
-                        const result = await page.evaluate(() => document.body.innerHTML)
-                        await browser.close()
-                        return result
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (compatible; AssistBot/1.0)'
                     }
                 })
                 
-                const content = await loader.scrape()
-                const cleanContent = this.cleanHtmlContent(content || '')
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+                }
+                
+                const html = await response.text()
+                const cleanContent = this.cleanHtmlContent(html)
                 
                 logger.info(`Successfully scraped ${url}, content length: ${cleanContent.length}`)
                 return cleanContent
@@ -56,11 +45,18 @@ export class ScrapingService {
     }
 
     private cleanHtmlContent(html: string): string {
+        // Remove script and style tags and their content
+        let content = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        content = content.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        
         // Remove HTML tags and replace with pipe separator
-        return html.replace(/<[^>]*>?/gm, '|')
+        content = content.replace(/<[^>]*>?/gm, '|')
             .replace(/\|+/g, '|') // Replace multiple pipes with single pipe
             .replace(/^\||\|$/g, '') // Remove leading/trailing pipes
+            .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
             .trim()
+        
+        return content
     }
 
     async scrapeMultiplePages(urls: string[]): Promise<Map<string, string>> {
@@ -77,6 +73,11 @@ export class ScrapingService {
                 
                 if (content.length === 0) {
                     logger.warn(`No content scraped from ${url}`)
+                }
+                
+                // Add delay between requests to be respectful
+                if (index < urls.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000))
                 }
                 
             } catch (error) {
